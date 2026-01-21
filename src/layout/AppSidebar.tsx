@@ -9,7 +9,6 @@ import {
   PieChartIcon,
   UserCircleIcon,
 } from "../icons/index";
-import SidebarWidget from "./SidebarWidget";
 
 // Custom icons for InboxIQ
 const DashboardIcon = () => (
@@ -375,7 +374,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );
