@@ -68,26 +68,27 @@ export default function ClassificationTrendChart() {
     },
   };
 
+  // Categories from design.md: Neutral (38%), Unclear (31%), Question (18%), Collaboration (9%), Other (4%)
   const series = [
     {
-      name: "Product Inquiry",
-      data: [820, 932, 1101, 1290],
+      name: "Neutral",
+      data: [420, 445, 462, 474],
     },
     {
-      name: "Pricing Question",
-      data: [620, 732, 801, 890],
+      name: "Unclear",
+      data: [340, 362, 378, 387],
     },
     {
-      name: "Support Request",
-      data: [520, 582, 621, 720],
+      name: "Question",
+      data: [195, 210, 218, 224],
     },
     {
       name: "Collaboration",
-      data: [420, 492, 561, 610],
+      data: [98, 105, 110, 112],
     },
     {
-      name: "General",
-      data: [320, 362, 401, 450],
+      name: "Other",
+      data: [42, 46, 48, 50],
     },
   ];
 
