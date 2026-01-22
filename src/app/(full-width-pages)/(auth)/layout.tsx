@@ -22,15 +22,27 @@ export default function AuthLayout({
               <GridShape />
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="block mb-4">
-                  <Image
-                    width={231}
-                    height={48}
-                    src="./images/logo/auth-logo.svg"
-                    alt="Logo"
-                  />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500">
+                      <svg
+                        className="h-7 w-7 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-2xl font-bold text-white">InboxIQ</span>
+                  </div>
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Free and Open-Source Tailwind CSS Admin Dashboard Template
+                  AI-powered DM automation for Instagram and WhatsApp
                 </p>
               </div>
             </div>

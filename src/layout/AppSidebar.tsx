@@ -100,7 +100,10 @@ const othersItems: NavItem[] = [
   {
     icon: <SettingsIcon />,
     name: "Settings",
-    path: "/settings",
+    subItems: [
+      { name: "Connected Accounts", path: "/settings/accounts", pro: false },
+      { name: "General", path: "/settings", pro: false },
+    ],
   },
 ];
 

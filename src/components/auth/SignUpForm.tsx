@@ -5,10 +5,51 @@ import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialInfo, setSocialInfo] = useState<string | null>(null);
+
+  const { signup } = useAuth();
+
+  const handleSocialSignup = (provider: "google" | "x") => {
+    setSocialInfo(`${provider === "google" ? "Google" : "X"} sign up coming soon. Please use email/password for now.`);
+    setTimeout(() => setSocialInfo(null), 5000);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!isChecked) {
+      setError("Please accept the Terms and Conditions");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await signup(email, password, firstName, lastName);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -31,8 +72,17 @@ export default function SignUpForm() {
             </p>
           </div>
           <div>
+            {socialInfo && (
+              <div className="p-3 text-sm text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg mb-3">
+                {socialInfo}
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                type="button"
+                onClick={() => handleSocialSignup("google")}
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 cursor-pointer"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -59,7 +109,11 @@ export default function SignUpForm() {
                 </svg>
                 Sign up with Google
               </button>
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                type="button"
+                onClick={() => handleSocialSignup("x")}
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 cursor-pointer"
+              >
                 <svg
                   width="21"
                   className="fill-current"
@@ -83,10 +137,14 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-5">
+                {error && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg">
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
                   <div className="sm:col-span-1">
                     <Label>
                       First Name<span className="text-error-500">*</span>
@@ -96,9 +154,11 @@ export default function SignUpForm() {
                       id="fname"
                       name="fname"
                       placeholder="Enter your first name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
                     />
                   </div>
-                  {/* <!-- Last Name --> */}
                   <div className="sm:col-span-1">
                     <Label>
                       Last Name<span className="text-error-500">*</span>
@@ -108,10 +168,12 @@ export default function SignUpForm() {
                       id="lname"
                       name="lname"
                       placeholder="Enter your last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
                     />
                   </div>
                 </div>
-                {/* <!-- Email --> */}
                 <div>
                   <Label>
                     Email<span className="text-error-500">*</span>
@@ -121,9 +183,11 @@ export default function SignUpForm() {
                     id="email"
                     name="email"
                     placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
-                {/* <!-- Password --> */}
                 <div>
                   <Label>
                     Password<span className="text-error-500">*</span>
@@ -132,6 +196,9 @@ export default function SignUpForm() {
                     <Input
                       placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -144,8 +211,10 @@ export default function SignUpForm() {
                       )}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Must be at least 8 characters
+                  </p>
                 </div>
-                {/* <!-- Checkbox --> */}
                 <div className="flex items-center gap-3">
                   <Checkbox
                     className="w-5 h-5"
@@ -163,10 +232,13 @@ export default function SignUpForm() {
                     </span>
                   </p>
                 </div>
-                {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                    Sign Up
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Creating account..." : "Sign Up"}
                   </button>
                 </div>
               </div>
@@ -174,7 +246,7 @@ export default function SignUpForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?
+                Already have an account?{" "}
                 <Link
                   href="/signin"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"

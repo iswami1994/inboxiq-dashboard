@@ -1,10 +1,60 @@
 "use client";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
+import { getConversationVolume, ConversationVolume } from "@/lib/api";
+import { useWebSocketContext } from "@/context/WebSocketContext";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function ConversationVolumeChart() {
+  const [volumeData, setVolumeData] = useState<ConversationVolume[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { onNewConversation, onResponseSent } = useWebSocketContext();
+
+  useEffect(() => {
+    // Initial fetch
+    async function fetchVolumeData() {
+      try {
+        const data = await getConversationVolume(7);
+        setVolumeData(data);
+      } catch (error) {
+        console.error("Failed to fetch volume data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVolumeData();
+
+    // For real-time updates, we could increment today's counts
+    const unsubNewConversation = onNewConversation(() => {
+      // Increment today's total
+      setVolumeData((prev) => {
+        if (prev.length === 0) return prev;
+        const today = new Date().toISOString().split("T")[0];
+        return prev.map((item) =>
+          item.date === today ? { ...item, total: item.total + 1 } : item
+        );
+      });
+    });
+
+    const unsubResponseSent = onResponseSent(() => {
+      // Increment today's automated count
+      setVolumeData((prev) => {
+        if (prev.length === 0) return prev;
+        const today = new Date().toISOString().split("T")[0];
+        return prev.map((item) =>
+          item.date === today ? { ...item, automated: item.automated + 1 } : item
+        );
+      });
+    });
+
+    return () => {
+      unsubNewConversation();
+      unsubResponseSent();
+    };
+  }, [onNewConversation, onResponseSent]);
+
   const options: ApexOptions = {
     legend: {
       show: true,
@@ -62,7 +112,7 @@ export default function ConversationVolumeChart() {
     },
     xaxis: {
       type: "category",
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      categories: volumeData.length > 0 ? volumeData.map((d) => d.day) : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       axisBorder: {
         show: false,
       },
@@ -80,20 +130,35 @@ export default function ConversationVolumeChart() {
     },
   };
 
-  const series = [
-    {
-      name: "Inbound",
-      data: [1850, 2100, 1950, 2300, 2150, 1200, 980],
-    },
-    {
-      name: "Auto-Responded",
-      data: [1680, 1920, 1780, 2100, 1960, 1080, 890],
-    },
-    {
-      name: "Manual Review",
-      data: [170, 180, 170, 200, 190, 120, 90],
-    },
-  ];
+  const series = volumeData.length > 0
+    ? [
+        {
+          name: "Inbound",
+          data: volumeData.map((d) => d.total),
+        },
+        {
+          name: "Auto-Responded",
+          data: volumeData.map((d) => d.automated),
+        },
+        {
+          name: "Manual Review",
+          data: volumeData.map((d) => d.manual),
+        },
+      ]
+    : [
+        {
+          name: "Inbound",
+          data: [0, 0, 0, 0, 0, 0, 0],
+        },
+        {
+          name: "Auto-Responded",
+          data: [0, 0, 0, 0, 0, 0, 0],
+        },
+        {
+          name: "Manual Review",
+          data: [0, 0, 0, 0, 0, 0, 0],
+        },
+      ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
@@ -110,7 +175,15 @@ export default function ConversationVolumeChart() {
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px] xl:min-w-full">
-          <Chart options={options} series={series} type="area" height={310} />
+          {loading ? (
+            <div className="h-[310px] flex items-center justify-center">
+              <div className="animate-pulse text-gray-400 dark:text-gray-500">
+                Loading chart data...
+              </div>
+            </div>
+          ) : (
+            <Chart options={options} series={series} type="area" height={310} />
+          )}
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@ import SignInForm from "@/components/auth/SignInForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Next.js SignIn Page | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Signin Page TailAdmin Dashboard Template",
+  title: "Sign In | InboxIQ",
+  description: "Sign in to your InboxIQ account to manage your Instagram and WhatsApp DM automation",
 };
 
 export default function SignIn() {
